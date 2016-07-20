@@ -1,4 +1,7 @@
+###################################################
+###################################################
 ##TOOL FOR CREATING NODES AND EDITING PARM FIELDS##
+###################################################
 ###################################################
 scene = hou.node('/obj/tentacleRIG1').children()
 bones = []
@@ -25,3 +28,60 @@ for null in nulls:
     fkBone.setInput(0,null,0)
     fkBones.append(fkBone)
     b += 1
+
+
+##THESE TOOLS BELOW HAVE BEEN MADE TO DEAL WITH GEO IMPORTED AS FBX FROM MAYA##
+
+####################################################################
+####################################################################
+##TOOL FOR COPYING PARM VALUES TO ANOTHER PARM AND REMOVE ORIGINAL##
+####################################################################
+####################################################################  
+scene = hou.selectedNodes()
+
+for item in scene:
+
+    try:
+        pivot = item.parmTuple('rpivot').eval()
+        print pivot
+    except AttributeError:
+        pivot = None
+    
+    if pivot:
+    
+        item.parmTuple('p').set(pivot)
+        item.parmTuple('rpivot').set((0,0,0))
+        item.parmTuple('spivot').set((0,0,0))
+        item.removeSpareParmTuple(item.parmTuple('rpivot'))
+        item.removeSpareParmTuple(item.parmTuple('spivot'))
+        
+    else:
+        
+        print 'nothing to change'
+    
+##########################################################
+##########################################################
+##TOOL FOR CENTERING SOP GEO TO AN OFFSET TRANSFORM NODE##
+##########################################################
+##########################################################
+#get a list of new geo pieces
+newGeo = hou.selectedNodes()
+
+#run an iteration over each item of the above list
+for geo in newGeo:
+
+    #find the parent node
+    parent = geo.parent()
+    
+    #fetch the pivot values of the parent node
+    pivot = parent.parmTuple('p').eval()
+    
+    #drop down a transform node called 'TransformPivot'
+    transformNode = parent.createNode('xform','xformPivot_'+geo.name())
+    
+    #connect the transform node to the geo node
+    transformNode.setInput(0,geo,0)
+    
+    #copy the values stored in pivot variable to the t parameter of the newly created transform node
+    transformNode.parmTuple('t').set(pivot)
+    
