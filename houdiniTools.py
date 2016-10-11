@@ -3,28 +3,30 @@
 #### TOOL FOR BAKING TRANSFORMS BETWEEN NODES #####
 ###################################################
 ###################################################
-
 nodes = hou.selectedNodes()
 
+#Variables
 geoAnim=nodes[0]
 geoBake=nodes[1]
 
 axis=('tx','ty','tz','rx','ry','rz')
-currentFrame = hou.frame()
-setKey = hou.Keyframe()
 
-setKey.setFrame(currentFrame)
+firstFrame = raw_input('Please Enter first frame')
+lastFrame = raw_input('Please Enter last frame')
 
-for ax in axis:
-    anim = geoAnim.parm(ax).eval()
-    setKey.setValue(anim)
-    geoBake.parm(ax).setKeyframe(setKey)
+for i in range (firstFrame,lastFrame):
 
-#for frame in range(1,25):
+    hou.setFrame(i)
+    setKey = hou.Keyframe()
+    setKey.setFrame(i)
 
-
-
-
+    xform = geoAnim.worldTransform()
+    geoBake.setWorldTransform(xform)
+    
+    for ax in axis:
+        anim = geoBake.parm(ax).eval()
+        setKey.setValue(anim)
+        geoBake.parm(ax).setKeyframe(setKey)
 
 ###################################################
 ###################################################
